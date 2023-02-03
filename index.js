@@ -1,49 +1,39 @@
 const express = require("express")
+const logger = require ("morgan")
+const cors = require("cors")
+
 const app = express()
-const port = 3000
-app.get('/', (req,res) => {
-    res.send("Tareas Backend")
-})
+const indexRouter = require("./routes/index")
+const userRouter = require("./routes/users")
+const mathsRouter = require("./routes/maths")
+const listRouter = require("./routes/list")
+const postRouter = require("./routes/postNombre")
 
-// Ruta Tarea1 -- Devuelve el nombre completo
-app.get('/tarea1/:nombre/:apellido', (req,res) => {
-    let nombreCompleto = req.params.nombre + " " + req.params.apellido
-    res.send(`Hola ${nombreCompleto}`)
-})
+app.use(logger("dev"))
+app.use(cors())
+app.use(express.json())
 
-// Ruta dividir --> devuelve resultado de division validando parámetros de entrada
-app.get('/dividir/:dividendo/:divisor', (req,res) => {
-    if ( isNaN(req.params.divisor) || isNaN(req.params.dividendo) || Number(req.params.divisor) === 0   ) {
-        res.json({error: "no se puede dividir por cero o parametros no son numericos"})
-    } else {
-        let resultado= req.params.dividendo / req.params.divisor
-        res.json(`Resultado: ${resultado}`)
-    }
-})
-// Ruta sumar --> devuelve resultado de suma si los nros son mayores a cero
-app.get('/sumar/:valor1/:valor2', (req,res) => {
-    if ( isNaN(req.params.valor1) || isNaN(req.params.valor2) || Number(req.params.valor1) < 0 ||   Number(req.params.valor2) < 0 ) {
-        res.json({error: "No se aceptan valores no numericos o menores que cero"})
-    } else {
-        let resultado= req.params.valor1 / req.params.valor2
-        res.json(`Resultado: ${resultado}`)
-    }
-})
-// Ruta numeropar --> recibe como parámetro de query numero=X siendo X un valor numérico
-app.get('/numeropar/', (req,res) => {
-    if ( isNaN(req.query.numero) || (Number(req.query.numero) % 2 ) ===1 || Number(req.query.numero) === 0) {
-        res.send("No autorizado - Parámetro impar o no numérico")
-    } else {
-        res.send("Autorizado!!")
-    }
-})
-// Ruta listadodecompras --> recibe como parámetro de query una lista de elementos y la muestra
-app.get('/listadodecompras/', (req,res) => {
-    res.json(req.query)
-})
+app.use( "/", indexRouter )
+
+// Ruta users -- Devuelve el nombre completo
+// USO http://localhost:3000/users/diego/ibarra
+// devuelve Hola diego ibarra
+app.use('/users', userRouter )
+
+// Funciones matemáticas, ver detalle en routes/maths.js
+app.use('/maths', mathsRouter )
+
+// Listado de objetos en JSON
+// USO http://localhost:3000/listadodecompras/?articulo1=lechuga&articulo2=papa&articulo3=batata
+// devuelve un json con el listado
+app.use('/listadodecompras', listRouter )
+
+// Listado de objetos en JSON
+// USO http://localhost:3000/postnombre/{json con nombre}
+// devuelve un json con el nombre
+app.use('/postnombre', postRouter )
 
 
 
-app.listen(port, () =>{
-    console.log(`Aplicacion escuchando en puerto ${port}`)
-})
+
+module.exports = app
